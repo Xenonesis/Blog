@@ -70,9 +70,11 @@
                         </div>
                         <input 
                             type="text" 
+                            name="hero_search"
                             placeholder="Search for blogs, topics, or authors..." 
                             class="w-full pl-12 pr-6 py-4 text-lg rounded-2xl border-0 shadow-xl focus:ring-4 focus:ring-white/30 transition-all duration-300"
                             id="hero-search"
+                            autocomplete="off"
                         >
                         <div class="absolute inset-y-0 right-0 pr-2 flex items-center">
                             <button class="bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-xl transition-colors">
@@ -248,8 +250,9 @@
                             </div>
                             <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">Stay Updated</h3>
                             <p class="text-gray-600 dark:text-gray-400 text-sm mb-4">Get the latest articles delivered to your inbox</p>
-                            <form class="space-y-3">
-                                <input type="email" placeholder="Enter your email" class="input-modern text-sm">
+                            <form class="space-y-3" action="#" method="POST">
+                                @csrf
+                                <input type="email" name="newsletter_email" id="newsletter_email" placeholder="Enter your email" class="input-modern text-sm" autocomplete="email">
                                 <button type="submit" class="btn-primary w-full text-sm">Subscribe</button>
                             </form>
                         </div>

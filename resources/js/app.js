@@ -30,7 +30,12 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize modern features
     initializeModernFeatures();
-    initializeAnimations();
+    
+    // Add a small delay to ensure all elements are rendered before animations
+    setTimeout(() => {
+        initializeAnimations();
+    }, 100);
+    
     initializeInteractions();
 });
 
@@ -239,35 +244,64 @@ async function loadMoreBlogs() {
 
 // Animations
 function initializeAnimations() {
-    // Hero section animation
-    gsap.timeline()
-        .from('.hero-title', { duration: 1, y: 50, opacity: 0, ease: 'power3.out' })
-        .from('.hero-subtitle', { duration: 1, y: 30, opacity: 0, ease: 'power3.out' }, '-=0.5')
-        .from('.hero-cta', { duration: 1, y: 20, opacity: 0, ease: 'power3.out' }, '-=0.5');
+    // Helper function to safely animate elements if they exist
+    function animateIfExists(selector, animation) {
+        const elements = document.querySelectorAll(selector);
+        if (elements.length > 0) {
+            return animation(elements);
+        }
+        return null;
+    }
     
-    // Blog cards stagger animation
-    gsap.from('.blog-card', {
-        duration: 0.8,
-        y: 50,
-        opacity: 0,
-        stagger: 0.1,
-        ease: 'power3.out',
-        scrollTrigger: {
-            trigger: '.blog-grid',
-            start: 'top 80%'
+    // Hero section animation - only if elements exist
+    const heroTitle = document.querySelector('.hero-title');
+    const heroSubtitle = document.querySelector('.hero-subtitle');
+    const heroCta = document.querySelector('.hero-cta');
+    
+    if (heroTitle || heroSubtitle || heroCta) {
+        const tl = gsap.timeline();
+        
+        if (heroTitle) {
+            tl.from('.hero-title', { duration: 1, y: 50, opacity: 0, ease: 'power3.out' });
+        }
+        if (heroSubtitle) {
+            tl.from('.hero-subtitle', { duration: 1, y: 30, opacity: 0, ease: 'power3.out' }, '-=0.5');
+        }
+        if (heroCta) {
+            tl.from('.hero-cta', { duration: 1, y: 20, opacity: 0, ease: 'power3.out' }, '-=0.5');
+        }
+    }
+    
+    // Blog cards stagger animation - only if elements exist
+    animateIfExists('.blog-card', (elements) => {
+        const blogGrid = document.querySelector('.blog-grid');
+        if (blogGrid) {
+            return gsap.from('.blog-card', {
+                duration: 0.8,
+                y: 50,
+                opacity: 0,
+                stagger: 0.1,
+                ease: 'power3.out',
+                scrollTrigger: {
+                    trigger: '.blog-grid',
+                    start: 'top 80%'
+                }
+            });
         }
     });
     
-    // Parallax effect for hero backgrounds
-    gsap.to('.parallax-bg', {
-        yPercent: -50,
-        ease: 'none',
-        scrollTrigger: {
-            trigger: '.parallax-bg',
-            start: 'top bottom',
-            end: 'bottom top',
-            scrub: true
-        }
+    // Parallax effect for hero backgrounds - only if elements exist
+    animateIfExists('.parallax-bg', (elements) => {
+        return gsap.to('.parallax-bg', {
+            yPercent: -50,
+            ease: 'none',
+            scrollTrigger: {
+                trigger: '.parallax-bg',
+                start: 'top bottom',
+                end: 'bottom top',
+                scrub: true
+            }
+        });
     });
 }
 

@@ -8,4 +8,20 @@ export default defineConfig({
             refresh: true,
         }),
     ],
+    build: {
+        // Configure build to avoid eval() usage
+        minify: 'esbuild',
+        // Ensure source maps don't use eval
+        sourcemap: false,
+        rollupOptions: {
+            output: {
+                // Avoid dynamic imports that might use eval
+                manualChunks: undefined,
+            },
+        },
+    },
+    esbuild: {
+        // Prevent esbuild from using eval
+        legalComments: 'none',
+    },
 });
