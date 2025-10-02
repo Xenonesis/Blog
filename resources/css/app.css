@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@400;500;600;700;800;900&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -7,39 +7,60 @@
 @layer base {
     html {
         scroll-behavior: smooth;
+        font-size: 16px;
     }
     
     body {
         font-feature-settings: 'kern' 1, 'liga' 1, 'calt' 1, 'pnum' 1, 'tnum' 0, 'onum' 1, 'lnum' 0, 'dlig' 0;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+    
+    h1, h2, h3, h4, h5, h6 {
+        font-family: 'Playfair Display', serif;
+        font-weight: 700;
+        line-height: 1.2;
     }
 }
 
 @layer components {
     /* Modern Button Styles */
     .btn-primary {
-        @apply inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200 transform hover:scale-105 active:scale-95;
+        @apply inline-flex items-center justify-center px-8 py-3.5 border border-transparent text-base font-semibold rounded-xl text-white bg-gradient-to-r from-primary-600 to-purple-600 hover:from-primary-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-300 transform hover:scale-105 hover:shadow-xl active:scale-95 shadow-lg;
     }
     
     .btn-secondary {
-        @apply inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-base font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200;
+        @apply inline-flex items-center justify-center px-8 py-3.5 border-2 border-gray-300 dark:border-gray-600 text-base font-semibold rounded-xl text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-300 hover:shadow-lg;
     }
     
     .btn-ghost {
-        @apply inline-flex items-center justify-center px-6 py-3 text-base font-medium rounded-lg text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200;
+        @apply inline-flex items-center justify-center px-8 py-3.5 text-base font-semibold rounded-xl text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-300;
+    }
+    
+    .btn-icon {
+        @apply inline-flex items-center justify-center w-12 h-12 rounded-full bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary-500;
     }
     
     /* Card Styles */
     .card {
-        @apply bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden transition-all duration-300 hover:shadow-lg hover:scale-[1.02];
+        @apply bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden transition-all duration-500 hover:shadow-2xl hover:scale-[1.02] hover:-translate-y-1;
     }
     
     .card-gradient {
-        @apply bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900;
+        @apply bg-gradient-to-br from-white via-gray-50 to-primary-50/30 dark:from-gray-800 dark:via-gray-800 dark:to-gray-900;
+    }
+    
+    .card-featured {
+        @apply card relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-br before:from-primary-500/10 before:to-purple-500/10 before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-500;
     }
     
     /* Glass Morphism Effect */
     .glass {
-        @apply bg-white/70 dark:bg-gray-800/70 backdrop-blur-md border border-white/20 dark:border-gray-700/20;
+        @apply bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl border border-white/30 dark:border-gray-700/30 shadow-xl;
+    }
+    
+    .glass-strong {
+        @apply bg-white/95 dark:bg-gray-800/95 backdrop-blur-2xl border border-white/40 dark:border-gray-700/40 shadow-2xl;
     }
     
     /* Modern Input Styles */
@@ -85,16 +106,49 @@
     
     /* Gradient Text */
     .gradient-text {
-        @apply bg-gradient-to-r from-primary-600 to-purple-600 bg-clip-text text-transparent;
+        @apply bg-gradient-to-r from-primary-600 via-purple-600 to-pink-600 bg-clip-text text-transparent;
+    }
+    
+    .gradient-text-subtle {
+        @apply bg-gradient-to-r from-gray-700 via-gray-800 to-gray-900 dark:from-gray-100 dark:via-gray-200 dark:to-gray-300 bg-clip-text text-transparent;
     }
     
     /* Hover Effects */
     .hover-lift {
-        @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+        @apply transition-all duration-500 hover:shadow-2xl hover:-translate-y-2;
     }
     
     .hover-glow {
-        @apply transition-all duration-300 hover:shadow-lg hover:shadow-primary-500/25;
+        @apply transition-all duration-500 hover:shadow-2xl hover:shadow-primary-500/30;
+    }
+    
+    .hover-scale {
+        @apply transition-transform duration-300 hover:scale-105;
+    }
+    
+    /* Hero Gradient Backgrounds */
+    .hero-gradient {
+        @apply bg-gradient-to-br from-primary-600 via-purple-600 to-pink-600;
+    }
+    
+    .hero-gradient-dark {
+        @apply bg-gradient-to-br from-gray-900 via-primary-900 to-purple-900;
+    }
+    
+    /* Section Backgrounds */
+    .section-pattern {
+        background-image: 
+            radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.05) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, rgba(168, 85, 247, 0.05) 0%, transparent 50%);
+    }
+    
+    .section-dots {
+        background-image: radial-gradient(circle, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+        background-size: 20px 20px;
+    }
+    
+    .dark .section-dots {
+        background-image: radial-gradient(circle, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
     }
     
     /* Modern Search Bar */
