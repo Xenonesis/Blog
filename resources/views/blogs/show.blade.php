@@ -77,24 +77,26 @@
                     <!-- Like/Dislike Buttons -->
                     @auth
                         <div class="flex items-center space-x-4 mb-8 pb-6 border-b border-gray-200 dark:border-gray-700">
-                            <form method="POST" action="{{ route('likes.toggle') }}" class="inline" onsubmit="return handleLikeSubmit(event, 'blog', {{ $blog->id }}, 'like')">
+                            <form method="POST" action="{{ route('likes.toggle') }}" class="inline" id="like-form-blog-{{ $blog->id }}">
                                 @csrf
                                 <input type="hidden" name="likeable_type" value="blog">
                                 <input type="hidden" name="likeable_id" value="{{ $blog->id }}">
                                 <input type="hidden" name="type" value="like">
-                                <button type="submit" 
+                                <button type="button" 
+                                        onclick="handleLikeSubmit(event, 'blog', {{ $blog->id }}, 'like')"
                                         class="flex items-center space-x-2 bg-green-100 hover:bg-green-200 text-green-800 px-4 py-2 rounded dark:bg-green-900 dark:text-green-300">
                                     👍
                                     <span id="likes-count">{{ $blog->likes()->where('type', 'like')->count() }}</span>
                                 </button>
                             </form>
                             
-                            <form method="POST" action="{{ route('likes.toggle') }}" class="inline" onsubmit="return handleLikeSubmit(event, 'blog', {{ $blog->id }}, 'dislike')">
+                            <form method="POST" action="{{ route('likes.toggle') }}" class="inline" id="dislike-form-blog-{{ $blog->id }}">
                                 @csrf
                                 <input type="hidden" name="likeable_type" value="blog">
                                 <input type="hidden" name="likeable_id" value="{{ $blog->id }}">
                                 <input type="hidden" name="type" value="dislike">
-                                <button type="submit" 
+                                <button type="button" 
+                                        onclick="handleLikeSubmit(event, 'blog', {{ $blog->id }}, 'dislike')"
                                         class="flex items-center space-x-2 bg-red-100 hover:bg-red-200 text-red-800 px-4 py-2 rounded dark:bg-red-900 dark:text-red-300">
                                     👎
                                     <span id="dislikes-count">{{ $blog->likes()->where('type', 'dislike')->count() }}</span>
@@ -150,24 +152,26 @@
                                         
                                         @auth
                                             <div class="flex items-center space-x-4">
-                                                <form method="POST" action="{{ route('likes.toggle') }}" class="inline" onsubmit="return handleLikeSubmit(event, 'comment', {{ $comment->id }}, 'like')">
+                                                <form method="POST" action="{{ route('likes.toggle') }}" class="inline" id="like-form-comment-{{ $comment->id }}">
                                                     @csrf
                                                     <input type="hidden" name="likeable_type" value="comment">
                                                     <input type="hidden" name="likeable_id" value="{{ $comment->id }}">
                                                     <input type="hidden" name="type" value="like">
-                                                    <button type="submit" 
+                                                    <button type="button" 
+                                                            onclick="handleLikeSubmit(event, 'comment', {{ $comment->id }}, 'like')"
                                                             class="flex items-center space-x-1 text-sm text-gray-500 hover:text-green-600 dark:text-gray-400 dark:hover:text-green-400">
                                                         👍
                                                         <span id="comment-likes-{{ $comment->id }}">{{ $comment->likes()->where('type', 'like')->count() }}</span>
                                                     </button>
                                                 </form>
                                                 
-                                                <form method="POST" action="{{ route('likes.toggle') }}" class="inline" onsubmit="return handleLikeSubmit(event, 'comment', {{ $comment->id }}, 'dislike')">
+                                                <form method="POST" action="{{ route('likes.toggle') }}" class="inline" id="dislike-form-comment-{{ $comment->id }}">
                                                     @csrf
                                                     <input type="hidden" name="likeable_type" value="comment">
                                                     <input type="hidden" name="likeable_id" value="{{ $comment->id }}">
                                                     <input type="hidden" name="type" value="dislike">
-                                                    <button type="submit" 
+                                                    <button type="button" 
+                                                            onclick="handleLikeSubmit(event, 'comment', {{ $comment->id }}, 'dislike')"
                                                             class="flex items-center space-x-1 text-sm text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400">
                                                         👎
                                                         <span id="comment-dislikes-{{ $comment->id }}">{{ $comment->likes()->where('type', 'dislike')->count() }}</span>
@@ -220,24 +224,26 @@
                                                         
                                                         @auth
                                                             <div class="flex items-center space-x-2">
-                                                                <form method="POST" action="{{ route('likes.toggle') }}" class="inline" onsubmit="return handleLikeSubmit(event, 'comment', {{ $reply->id }}, 'like')">
+                                                                <form method="POST" action="{{ route('likes.toggle') }}" class="inline" id="like-form-comment-{{ $reply->id }}">
                                                                     @csrf
                                                                     <input type="hidden" name="likeable_type" value="comment">
                                                                     <input type="hidden" name="likeable_id" value="{{ $reply->id }}">
                                                                     <input type="hidden" name="type" value="like">
-                                                                    <button type="submit" 
+                                                                    <button type="button" 
+                                                                            onclick="handleLikeSubmit(event, 'comment', {{ $reply->id }}, 'like')"
                                                                             class="flex items-center space-x-1 text-xs text-gray-500 hover:text-green-600 dark:text-gray-400 dark:hover:text-green-400">
                                                                         👍
                                                                         <span id="comment-likes-{{ $reply->id }}">{{ $reply->likes()->where('type', 'like')->count() }}</span>
                                                                     </button>
                                                                 </form>
                                                                 
-                                                                <form method="POST" action="{{ route('likes.toggle') }}" class="inline" onsubmit="return handleLikeSubmit(event, 'comment', {{ $reply->id }}, 'dislike')">
+                                                                <form method="POST" action="{{ route('likes.toggle') }}" class="inline" id="dislike-form-comment-{{ $reply->id }}">
                                                                     @csrf
                                                                     <input type="hidden" name="likeable_type" value="comment">
                                                                     <input type="hidden" name="likeable_id" value="{{ $reply->id }}">
                                                                     <input type="hidden" name="type" value="dislike">
-                                                                    <button type="submit" 
+                                                                    <button type="button" 
+                                                                            onclick="handleLikeSubmit(event, 'comment', {{ $reply->id }}, 'dislike')"
                                                                             class="flex items-center space-x-1 text-xs text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400">
                                                                         👎
                                                                         <span id="comment-dislikes-{{ $reply->id }}">{{ $reply->likes()->where('type', 'dislike')->count() }}</span>
@@ -293,18 +299,32 @@
         function handleLikeSubmit(event, type, id, action) {
             event.preventDefault();
             console.log('Handling like submit:', type, id, action);
+
+            // Get the form based on type and action
+            const formId = action === 'like' ? `like-form-${type}-${id}` : `dislike-form-${type}-${id}`;
+            const form = document.getElementById(formId);
             
-            const form = event.target;
+            if (!form) {
+                console.error('Form not found:', formId);
+                return false;
+            }
+
             const formData = new FormData(form);
-            
+
             fetch(form.action, {
                 method: 'POST',
-                body: formData
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
             })
             .then(response => {
                 console.log('Response status:', response.status);
                 if (!response.ok) {
-                    throw new Error('Network response was not ok: ' + response.status);
+                    return response.text().then(text => {
+                        throw new Error(`HTTP ${response.status}: ${text}`);
+                    });
                 }
                 return response.json();
             })
@@ -316,67 +336,29 @@
                         document.getElementById('likes-count').textContent = data.likes_count;
                         document.getElementById('dislikes-count').textContent = data.dislikes_count;
                     } else if (type === 'comment') {
-                        document.getElementById('comment-likes-' + id).textContent = data.likes_count;
-                        // Also update dislikes if the element exists
+                        const likesElement = document.getElementById('comment-likes-' + id);
                         const dislikesElement = document.getElementById('comment-dislikes-' + id);
+
+                        if (likesElement) {
+                            likesElement.textContent = data.likes_count;
+                        }
                         if (dislikesElement) {
                             dislikesElement.textContent = data.dislikes_count;
                         }
                     }
+                    console.log('Like/dislike updated successfully');
                 } else {
                     console.error('Server returned success=false:', data);
+                    alert('Error: ' + (data.message || 'Unknown error occurred'));
                 }
             })
             .catch(error => {
                 console.error('Error submitting like:', error);
-                alert('Error: ' + error.message);
+                alert('Error updating like/dislike: ' + error.message);
             });
-            
+
             return false;
-        }
-
-        function toggleLike(type, id, action) {
-            console.log('Toggling like:', type, id, action);
-            
-            fetch('{{ route("likes.toggle") }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                },
-                body: JSON.stringify({
-                    likeable_type: type,
-                    likeable_id: id,
-                    type: action
-                })
-            })
-            .then(response => {
-                console.log('Response status:', response.status);
-                if (!response.ok) {
-                    throw new Error('Network response was not ok: ' + response.status);
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log('Response data:', data);
-                if (data.success) {
-                    // Update counts
-                    if (type === 'blog') {
-                        document.getElementById('likes-count').textContent = data.likes_count;
-                        document.getElementById('dislikes-count').textContent = data.dislikes_count;
-                    }
-                    // For comments, you'd need to update individual comment counts
-                } else {
-                    console.error('Server returned success=false:', data);
-                }
-            })
-            .catch(error => {
-                console.error('Error toggling like:', error);
-                alert('Error: ' + error.message);
-            });
-        }
-
-        function showReplyForm(commentId) {
+        }        function showReplyForm(commentId) {
             document.getElementById('reply-form-' + commentId).classList.remove('hidden');
         }
 
