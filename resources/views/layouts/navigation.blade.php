@@ -70,9 +70,9 @@
                     <div class="relative" x-data="{ userDropdownOpen: false }">
                         <button @click="userDropdownOpen = !userDropdownOpen" class="flex items-center space-x-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                             <div class="w-8 h-8 bg-gradient-to-br from-green-500 to-blue-600 rounded-full flex items-center justify-center">
-                                <span class="text-white font-medium text-sm">{{ substr(Auth::user()->name, 0, 1) }}</span>
+                                <span class="text-white font-medium text-sm">{{ Auth::user() ? substr(Auth::user()->name, 0, 1) : 'U' }}</span>
                             </div>
-                            <span class="hidden md:block text-sm font-medium text-gray-700 dark:text-gray-200">{{ Auth::user()->name }}</span>
+                            <span class="hidden md:block text-sm font-medium text-gray-700 dark:text-gray-200">{{ Auth::user() ? Auth::user()->name : 'User' }}</span>
                             <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                             </svg>
@@ -80,8 +80,8 @@
 
                         <div x-show="userDropdownOpen" @click.away="userDropdownOpen = false" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95" class="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50">
                             <div class="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
-                                <p class="text-sm font-medium text-gray-900 dark:text-white">{{ Auth::user()->name }}</p>
-                                <p class="text-sm text-gray-500 dark:text-gray-400">{{ Auth::user()->email }}</p>
+                                <p class="text-sm font-medium text-gray-900 dark:text-white">{{ Auth::user() ? Auth::user()->name : 'User' }}</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">{{ Auth::user() ? Auth::user()->email : 'user@example.com' }}</p>
                             </div>
                             
                             <a href="{{ route('profile.edit') }}" class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
@@ -171,8 +171,8 @@
             <!-- Responsive Settings Options -->
             <div class="pt-4 pb-1 border-t border-gray-200 dark:border-gray-600">
                 <div class="px-4">
-                    <div class="font-medium text-base text-gray-800 dark:text-gray-200">{{ Auth::user()->name }}</div>
-                    <div class="font-medium text-sm text-gray-500">{{ Auth::user()->email }}</div>
+                    <div class="font-medium text-base text-gray-800 dark:text-gray-200">{{ Auth::user() ? Auth::user()->name : 'User' }}</div>
+                    <div class="font-medium text-sm text-gray-500">{{ Auth::user() ? Auth::user()->email : 'user@example.com' }}</div>
                 </div>
 
                 <div class="mt-3 space-y-1">
