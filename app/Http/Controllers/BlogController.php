@@ -190,6 +190,15 @@ class BlogController extends Controller
     }
 
     /**
+     * Show all categories.
+     */
+    public function categories()
+    {
+        $categories = Category::withCount('blogs')->get();
+        return view('blogs.categories', compact('categories'));
+    }
+
+    /**
      * Show blogs by category.
      */
     public function category(Category $category)

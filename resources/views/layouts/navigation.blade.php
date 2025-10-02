@@ -29,7 +29,7 @@
                         </svg>
                         {{ __('All Blogs') }}
                     </a>
-                    <a href="#" class="nav-link-modern">
+                    <a href="{{ route('blogs.categories') }}" class="nav-link-modern {{ request()->routeIs('blogs.categories') || request()->routeIs('blogs.category') ? 'active bg-primary-50 dark:bg-primary-900/50 text-primary-600 dark:text-primary-400' : '' }}">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                         </svg>
@@ -161,7 +161,7 @@
         <div class="pt-2 pb-3 space-y-1 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
             <a href="{{ route('home') }}" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700">{{ __('Home') }}</a>
             <a href="{{ route('blogs.index') }}" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700">{{ __('All Blogs') }}</a>
-            <a href="#" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700">{{ __('Categories') }}</a>
+            <a href="{{ route('blogs.categories') }}" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700">{{ __('Categories') }}</a>
             @auth
                 <a href="{{ route('dashboard') }}" class="block px-4 py-2 text-base font-medium text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700">{{ __('Dashboard') }}</a>
             @endauth

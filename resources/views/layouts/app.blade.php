@@ -123,7 +123,7 @@
                             <h4 class="text-lg font-semibold mb-4">Quick Links</h4>
                             <ul class="space-y-2">
                                 <li><a href="{{ route('blogs.index') }}" class="text-gray-600 dark:text-gray-400 hover:text-primary-500 transition-colors">All Blogs</a></li>
-                                <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-primary-500 transition-colors">Categories</a></li>
+                                <li><a href="{{ route('blogs.categories') }}" class="text-gray-600 dark:text-gray-400 hover:text-primary-500 transition-colors">Categories</a></li>
                                 <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-primary-500 transition-colors">Authors</a></li>
                                 <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-primary-500 transition-colors">About</a></li>
                             </ul>
