@@ -28,7 +28,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     
     // User blog management
-    Route::resource('my-blogs', BlogController::class)->except(['index', 'show']);
+    Route::resource('my-blogs', BlogController::class)->parameters(['my-blogs' => 'blog'])->except(['index', 'show']);
     
     // Comments
     Route::post('/blogs/{blog}/comments', [CommentController::class, 'store'])->name('comments.store');

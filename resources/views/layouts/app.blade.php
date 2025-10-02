@@ -5,7 +5,41 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <meta name="theme-color" content="#3b82f6">
-        
+
+        <!-- Prevent flash of incorrect theme on load: set theme early and suppress transitions -->
+        <style>
+            /* When present, remove all transitions while initial theme is applied */
+            .no-transitions * {
+                transition: none !important;
+                animation: none !important;
+            }
+        </style>
+        <script>
+            (function() {
+                try {
+                    var root = document.documentElement;
+                    // determine preference: explicit localStorage > prefers-color-scheme
+                    var stored = localStorage.getItem('theme');
+                    var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    var useDark = stored ? (stored === 'dark') : prefersDark;
+
+                    // add the class early so Tailwind's dark: rules apply immediately
+                    if (useDark) root.classList.add('dark'); else root.classList.remove('dark');
+
+                    // temporarily suppress transitions to avoid flash
+                    root.classList.add('no-transitions');
+                    // remove the suppression on the next paint
+                    requestAnimationFrame(function() {
+                        setTimeout(function() {
+                            root.classList.remove('no-transitions');
+                        }, 0);
+                    });
+                } catch (e) {
+                    // silent fallback
+                }
+            })();
+        </script>
+
         <title>@yield('title', config('app.name', 'Modern Blog'))</title>
         <meta name="description" content="@yield('description', 'A modern, feature-rich blog platform built with Laravel')">
         
