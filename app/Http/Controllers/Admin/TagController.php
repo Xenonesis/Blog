@@ -3,7 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Tag;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class TagController extends Controller
 {
@@ -12,7 +15,11 @@ class TagController extends Controller
      */
     public function index()
     {
-        //
+        $tags = Tag::withCount('blogs')
+            ->orderBy('name')
+            ->paginate(20);
+
+        return view('admin.tags.index', compact('tags'));
     }
 
     /**
@@ -20,7 +27,7 @@ class TagController extends Controller
      */
     public function create()
     {
-        //
+        return view('admin.tags.create');
     }
 
     /**
@@ -28,7 +35,17 @@ class TagController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'name' => 'required|string|max:255|unique:tags',
+        ]);
+
+        Tag::create([
+            'name' => $request->name,
+            'slug' => Str::slug($request->name),
+        ]);
+
+        return redirect()->route('admin.tags.index')
+            ->with('success', 'Tag created successfully!');
     }
 
     /**
@@ -42,24 +59,43 @@ class TagController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(Tag $tag)
     {
-        //
+        return view('admin.tags.edit', compact('tag'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Tag $tag)
     {
-        //
+        $request->validate([
+            'name' => ['required', 'string', 'max:255', Rule::unique('tags')->ignore($tag->id)],
+        ]);
+
+        $tag->update([
+            'name' => $request->name,
+            'slug' => Str::slug($request->name),
+        ]);
+
+        return redirect()->route('admin.tags.index')
+            ->with('success', 'Tag updated successfully!');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Tag $tag)
     {
-        //
+        // Check if tag has blogs
+        if ($tag->blogs()->count() > 0) {
+            return redirect()->route('admin.tags.index')
+                ->with('error', 'Cannot delete tag that has blogs assigned to it.');
+        }
+
+        $tag->delete();
+
+        return redirect()->route('admin.tags.index')
+            ->with('success', 'Tag deleted successfully!');
     }
 }
