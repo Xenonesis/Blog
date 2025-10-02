@@ -1,517 +1,104 @@
 @extends('admin.layout')
 
 @section('content')
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" x-data="commentsTable()">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <!-- Page Header -->
     <div class="mb-8">
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div>
-                <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Comment Management</h1>
-                <p class="mt-2 text-gray-600 dark:text-gray-400">Moderate and manage all comments</p>
-            </div>
-            <div class="flex items-center space-x-3">
-                <div class="text-sm text-gray-600 dark:text-gray-400">
-                    <span class="font-medium" x-text="filteredComments.length"></span> total comments
-                </div>
-            </div>
-        </div>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Comment Management</h1>
+        <p class="mt-2 text-gray-600 dark:text-gray-400">Moderate and manage all comments</p>
     </div>
 
-    <!-- Search and Filters -->
+    <!-- Filters -->
     <div class="mb-6 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
-        <div class="flex flex-col sm:flex-row gap-4">
+        <form method="GET" class="flex flex-col sm:flex-row gap-4">
             <div class="flex-1">
-                <label for="search" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Search Comments</label>
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                        </svg>
-                    </div>
-                    <input type="text" id="search" x-model.debounce.300ms="searchQuery" placeholder="Search by content, author, or blog title..."
-                           class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                </div>
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Search comments..."
+                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white">
             </div>
-            <div class="flex items-end space-x-3">
-                <div>
-                    <label for="statusFilter" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
-                    <select id="statusFilter" x-model="statusFilter" @change="filterComments()"
-                            class="block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        <option value="">All Status</option>
-                        <option value="pending">Pending</option>
-                        <option value="approved">Approved</option>
-                        <option value="rejected">Rejected</option>
-                    </select>
-                </div>
-                <div>
-                    <label for="itemsPerPage" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Show</label>
-                    <select id="itemsPerPage" x-model="itemsPerPage" @change="filterComments()"
-                            class="block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        <option value="5">5</option>
-                        <option value="10" selected>10</option>
-                        <option value="25">25</option>
-                        <option value="50">50</option>
-                    </select>
-                </div>
+            <div>
+                <select name="status" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white">
+                    <option value="">All Status</option>
+                    <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Pending</option>
+                    <option value="approved" {{ request('status') === 'approved' ? 'selected' : '' }}>Approved</option>
+                    <option value="rejected" {{ request('status') === 'rejected' ? 'selected' : '' }}>Rejected</option>
+                </select>
             </div>
-        </div>
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+                Apply
+            </button>
+        </form>
     </div>
 
     <!-- Comments Table -->
-    <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+    <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm rounded-lg">
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                 <thead class="bg-gray-50 dark:bg-gray-700">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                            <button @click="sortBy('content')" class="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-200">
-                                <span>Comment</span>
-                                <svg x-show="sortField === 'content'" :class="{'rotate-180': sortDirection === 'desc'}" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
-                                </svg>
-                            </button>
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                            <button @click="sortBy('user_name')" class="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-200">
-                                <span>Author</span>
-                                <svg x-show="sortField === 'user_name'" :class="{'rotate-180': sortDirection === 'desc'}" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
-                                </svg>
-                            </button>
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                            <button @click="sortBy('blog_title')" class="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-200">
-                                <span>Blog Post</span>
-                                <svg x-show="sortField === 'blog_title'" :class="{'rotate-180': sortDirection === 'desc'}" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
-                                </svg>
-                            </button>
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                            <button @click="sortBy('status')" class="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-200">
-                                <span>Status</span>
-                                <svg x-show="sortField === 'status'" :class="{'rotate-180': sortDirection === 'desc'}" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
-                                </svg>
-                            </button>
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                            <button @click="sortBy('created_at')" class="flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-200">
-                                <span>Posted</span>
-                                <svg x-show="sortField === 'created_at'" :class="{'rotate-180': sortDirection === 'desc'}" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
-                                </svg>
-                            </button>
-                        </th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Comment</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Author</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Blog</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Date</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                    <template x-for="comment in paginatedComments" :key="comment.id">
+                    @forelse($comments ?? [] as $comment)
                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
-                            <td class="px-6 py-4 max-w-xs">
-                                <div class="text-sm text-gray-900 dark:text-white" x-text="comment.content"></div>
-                                <div x-show="comment.parent_content" class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                    Reply to: <span x-text="comment.parent_content"></span>
-                                </div>
-                                <div x-show="comment.is_reply" class="inline-flex items-center mt-1 px-2 py-0.5 rounded text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clip-rule="evenodd"></path>
-                                    </svg>
-                                    Reply
-                                </div>
+                            <td class="px-6 py-4">
+                                <p class="text-sm text-gray-900 dark:text-white">{{ Str::limit(strip_tags($comment->content), 100) }}</p>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex items-center">
-                                    <div class="w-8 h-8 bg-gradient-to-r from-green-500 to-blue-600 rounded-full flex items-center justify-center">
-                                        <span class="text-white text-sm font-bold" x-text="comment.user_name ? comment.user_name.charAt(0).toUpperCase() : 'U'"></span>
-                                    </div>
-                                    <div class="ml-3">
-                                        <div class="text-sm font-medium text-gray-900 dark:text-white" x-text="comment.user_name || 'Unknown User'"></div>
-                                        <div class="text-sm text-gray-500 dark:text-gray-400" x-text="comment.user_email || 'No email'"></div>
-                                    </div>
-                                </div>
+                            <td class="px-6 py-4 text-sm text-gray-900 dark:text-white">{{ $comment->user?->name ?? 'Unknown' }}</td>
+                            <td class="px-6 py-4">
+                                <a href="{{ route('blogs.show', $comment->blog?->slug ?? '#') }}" class="text-sm text-blue-600 hover:text-blue-800" target="_blank">
+                                    {{ Str::limit($comment->blog?->title ?? 'Unknown Blog', 30) }}
+                                </a>
                             </td>
-                            <td class="px-6 py-4 max-w-xs">
-                                <div class="text-sm font-medium text-gray-900 dark:text-white">
-                                    <a :href="comment.blog_url" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"><span x-text="comment.blog_title || 'Unknown Blog'"></span></a>
-                                </div>
-                                <div class="text-sm text-gray-500 dark:text-gray-400">
-                                    by <span x-text="comment.blog_author || 'Unknown Author'"></span>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                                      :class="comment.status === 'approved' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' :
-                                             (comment.status === 'pending' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300' :
-                                             'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300')">
-                                    <svg x-show="comment.status === 'approved'" class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                    </svg>
-                                    <svg x-show="comment.status === 'pending'" class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
-                                    </svg>
-                                    <svg x-show="comment.status === 'rejected'" class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
-                                    </svg>
-                                    <span x-text="comment.status.charAt(0).toUpperCase() + comment.status.slice(1)"></span>
+                            <td class="px-6 py-4">
+                                <span class="px-2 py-1 text-xs font-medium rounded-full 
+                                    {{ $comment->status === 'approved' ? 'bg-green-100 text-green-800' : 
+                                       ($comment->status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800') }}">
+                                    {{ ucfirst($comment->status) }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                <div x-text="formatDate(comment.created_at)"></div>
-                                <div class="text-xs" x-text="timeAgo(comment.created_at)"></div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <div class="relative">
-                                    <button @click="toggleActionMenu(comment.id)"
-                                            class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
-                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                            <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"></path>
-                                        </svg>
-                                    </button>
-                                    <div x-show="activeMenu === comment.id"
-                                         @click.away="activeMenu = null"
-                                         x-transition:enter="transition ease-out duration-100"
-                                         x-transition:enter-start="transform opacity-0 scale-95"
-                                         x-transition:enter-end="transform opacity-100 scale-100"
-                                         x-transition:leave="transition ease-in duration-75"
-                                         x-transition:leave-start="transform opacity-100 scale-100"
-                                         x-transition:leave-end="transform opacity-0 scale-95"
-                                         class="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-700 rounded-md shadow-lg z-10 ring-1 ring-black ring-opacity-5">
-                                        <div class="py-1">
-                                            <button x-show="comment.status !== 'approved'" @click="approveComment(comment)"
-                                                    class="flex items-center w-full px-4 py-2 text-sm text-green-600 dark:text-green-400 hover:bg-gray-100 dark:hover:bg-gray-600">
-                                                <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                                </svg>
-                                                Approve Comment
-                                            </button>
-                                            <button x-show="comment.status !== 'rejected'" @click="rejectComment(comment)"
-                                                    class="flex items-center w-full px-4 py-2 text-sm text-yellow-600 dark:text-yellow-400 hover:bg-gray-100 dark:hover:bg-gray-600">
-                                                <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                                </svg>
-                                                Reject Comment
-                                            </button>
-                                            <div class="border-t border-gray-100 dark:border-gray-600"></div>
-                                            <a :href="comment.blog_url" class="flex items-center px-4 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-600">
-                                                <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                                                </svg>
-                                                View Blog Post
-                                            </a>
-                                            <div class="border-t border-gray-100 dark:border-gray-600"></div>
-                                            <button @click="confirmDelete(comment.content.substring(0, 50) + '...', comment.delete_url)"
-                                                    class="flex items-center w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-600">
-                                                <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                                </svg>
-                                                Delete Comment
-                                            </button>
-                                        </div>
-                                    </div>
+                            <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{{ $comment->created_at->format('M d, Y') }}</td>
+                            <td class="px-6 py-4 text-sm font-medium">
+                                <div class="flex space-x-2">
+                                    @if($comment->status !== 'approved')
+                                        <form action="{{ route('admin.comments.approve', $comment) }}" method="POST" class="inline">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button type="submit" class="text-green-600 hover:text-green-900">Approve</button>
+                                        </form>
+                                    @endif
+                                    @if($comment->status !== 'rejected')
+                                        <form action="{{ route('admin.comments.reject', $comment) }}" method="POST" class="inline">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button type="submit" class="text-red-600 hover:text-red-900">Reject</button>
+                                        </form>
+                                    @endif
                                 </div>
                             </td>
                         </tr>
-                    </template>
-                    <template x-if="paginatedComments.length === 0">
+                    @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-12 text-center">
-                                <div class="flex flex-col items-center">
-                                    <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
-                                    </svg>
-                                    <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-1">No comments found</h3>
-                                    <p class="text-sm text-gray-500 dark:text-gray-400" x-show="searchQuery || statusFilter">Try adjusting your search or filter criteria.</p>
-                                    <p class="text-sm text-gray-500 dark:text-gray-400" x-show="!searchQuery && !statusFilter">Comments will appear here once users start commenting on blog posts.</p>
-                                </div>
+                            <td colspan="6" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                                No comments found.
                             </td>
                         </tr>
-                    </template>
+                    @endforelse
                 </tbody>
             </table>
         </div>
-    </div>
 
-    <!-- Pagination -->
-    <div x-show="totalPages > 1" class="mt-6 bg-white dark:bg-gray-800 px-4 py-3 flex items-center justify-between border-t border-gray-200 dark:border-gray-700 sm:px-6 rounded-lg shadow-sm">
-        <div class="flex-1 flex justify-between sm:hidden">
-            <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1"
-                    class="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed">
-                Previous
-            </button>
-            <button @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages"
-                    class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed">
-                Next
-            </button>
-        </div>
-        <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-            <div>
-                <p class="text-sm text-gray-700 dark:text-gray-300">
-                    Showing <span class="font-medium" x-text="(currentPage - 1) * itemsPerPage + 1"></span> to
-                    <span class="font-medium" x-text="Math.min(currentPage * itemsPerPage, filteredComments.length)"></span> of
-                    <span class="font-medium" x-text="filteredComments.length"></span> results
-                </p>
+        <!-- Pagination -->
+        @if(isset($comments) && $comments->hasPages())
+            <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+                {{ $comments->links() }}
             </div>
-            <div>
-                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                    <button @click="goToPage(currentPage - 1)" :disabled="currentPage === 1"
-                            class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                        </svg>
-                    </button>
-                    <template x-for="page in visiblePages" :key="page">
-                        <button @click="goToPage(page)" :class="page === currentPage ? 'z-10 bg-blue-50 dark:bg-blue-900 border-blue-500 text-blue-600 dark:text-blue-400' : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-600'"
-                                class="relative inline-flex items-center px-4 py-2 border text-sm font-medium">
-                            <span x-text="page"></span>
-                        </button>
-                    </template>
-                    <button @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages"
-                            class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                        </svg>
-                    </button>
-                </nav>
-            </div>
-        </div>
+        @endif
     </div>
 </div>
-
-<script>
-function commentsTable() {
-    return {
-        comments: @json($comments->map(function($comment) {
-            return [
-                'id' => $comment->id,
-                'content' => Str::limit($comment->content, 100),
-                'parent_content' => $comment->parent ? Str::limit($comment->parent->content, 50) : null,
-                'is_reply' => $comment->parent ? true : false,
-                'user_name' => $comment->user?->name,
-                'user_email' => $comment->user?->email,
-                'blog_title' => $comment->blog?->title,
-                'blog_author' => $comment->blog?->user?->name,
-                'blog_url' => route('blogs.show', $comment->blog?->slug ?? '#'),
-                'status' => $comment->status,
-                'created_at' => $comment->created_at->toISOString(),
-                'approve_url' => route('admin.comments.approve', $comment),
-                'reject_url' => route('admin.comments.reject', $comment),
-                'delete_url' => route('comments.destroy', $comment),
-            ];
-        })),
-        filteredComments: [],
-        paginatedComments: [],
-        searchQuery: '',
-        statusFilter: '',
-        sortField: 'created_at',
-        sortDirection: 'desc',
-        currentPage: 1,
-        itemsPerPage: 10,
-        activeMenu: null,
-
-        init() {
-            this.filteredComments = [...this.comments];
-            this.filterComments();
-        },
-
-        filterComments() {
-            let filtered = [...this.comments];
-
-            // Search filter
-            if (this.searchQuery) {
-                const query = this.searchQuery.toLowerCase();
-                filtered = filtered.filter(comment =>
-                    comment.content.toLowerCase().includes(query) ||
-                    (comment.user_name && comment.user_name.toLowerCase().includes(query)) ||
-                    (comment.blog_title && comment.blog_title.toLowerCase().includes(query))
-                );
-            }
-
-            // Status filter
-            if (this.statusFilter) {
-                filtered = filtered.filter(comment => comment.status === this.statusFilter);
-            }
-
-            // Sort
-            filtered.sort((a, b) => {
-                let aVal = a[this.sortField];
-                let bVal = b[this.sortField];
-
-                // Handle null values
-                if (aVal == null && bVal == null) return 0;
-                if (aVal == null) return 1;
-                if (bVal == null) return -1;
-
-                // Handle string comparison
-                if (typeof aVal === 'string') aVal = aVal.toLowerCase();
-                if (typeof bVal === 'string') bVal = bVal.toLowerCase();
-
-                if (aVal < bVal) return this.sortDirection === 'asc' ? -1 : 1;
-                if (aVal > bVal) return this.sortDirection === 'asc' ? 1 : -1;
-                return 0;
-            });
-
-            this.filteredComments = filtered;
-            this.currentPage = 1;
-            this.paginateComments();
-        },
-
-        sortBy(field) {
-            if (this.sortField === field) {
-                this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-            } else {
-                this.sortField = field;
-                this.sortDirection = 'asc';
-            }
-            this.filterComments();
-        },
-
-        paginateComments() {
-            const start = (this.currentPage - 1) * this.itemsPerPage;
-            const end = start + this.itemsPerPage;
-            this.paginatedComments = this.filteredComments.slice(start, end);
-        },
-
-        goToPage(page) {
-            if (page >= 1 && page <= this.totalPages) {
-                this.currentPage = page;
-                this.paginateComments();
-            }
-        },
-
-        get totalPages() {
-            return Math.ceil(this.filteredComments.length / this.itemsPerPage);
-        },
-
-        get visiblePages() {
-            const pages = [];
-            const total = this.totalPages;
-            const current = this.currentPage;
-
-            if (total <= 7) {
-                for (let i = 1; i <= total; i++) pages.push(i);
-            } else {
-                pages.push(1);
-                if (current > 4) pages.push('...');
-                const start = Math.max(2, current - 1);
-                const end = Math.min(total - 1, current + 1);
-                for (let i = start; i <= end; i++) pages.push(i);
-                if (current < total - 3) pages.push('...');
-                pages.push(total);
-            }
-
-            return pages.filter(p => p !== '...');
-        },
-
-        toggleActionMenu(commentId) {
-            this.activeMenu = this.activeMenu === commentId ? null : commentId;
-        },
-
-        formatDate(dateString) {
-            const date = new Date(dateString);
-            return date.toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric'
-            });
-        },
-
-        timeAgo(dateString) {
-            const date = new Date(dateString);
-            const now = new Date();
-            const diffInSeconds = Math.floor((now - date) / 1000);
-
-            if (diffInSeconds < 60) return 'Just now';
-            if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
-            if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
-            if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)} days ago`;
-
-            return date.toLocaleDateString();
-        },
-
-        approveComment(comment) {
-            if (confirm('Are you sure you want to approve this comment?')) {
-                // Create a form and submit it
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = comment.approve_url;
-
-                const csrfToken = document.querySelector('meta[name="csrf-token"]');
-                if (csrfToken) {
-                    const csrfInput = document.createElement('input');
-                    csrfInput.type = 'hidden';
-                    csrfInput.name = '_token';
-                    csrfInput.value = csrfToken.getAttribute('content');
-                    form.appendChild(csrfInput);
-                }
-
-                const methodInput = document.createElement('input');
-                methodInput.type = 'hidden';
-                methodInput.name = '_method';
-                methodInput.value = 'PATCH';
-                form.appendChild(methodInput);
-
-                document.body.appendChild(form);
-                form.submit();
-            }
-        },
-
-        rejectComment(comment) {
-            if (confirm('Are you sure you want to reject this comment?')) {
-                // Create a form and submit it
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = comment.reject_url;
-
-                const csrfToken = document.querySelector('meta[name="csrf-token"]');
-                if (csrfToken) {
-                    const csrfInput = document.createElement('input');
-                    csrfInput.type = 'hidden';
-                    csrfInput.name = '_token';
-                    csrfInput.value = csrfToken.getAttribute('content');
-                    form.appendChild(csrfInput);
-                }
-
-                const methodInput = document.createElement('input');
-                methodInput.type = 'hidden';
-                methodInput.name = '_method';
-                methodInput.value = 'PATCH';
-                form.appendChild(methodInput);
-
-                document.body.appendChild(form);
-                form.submit();
-            }
-        },
-
-        confirmDelete(content, deleteUrl) {
-            if (confirm(`Are you sure you want to delete this comment?\n\n"${content}"\n\nThis action cannot be undone.`)) {
-                // Create a form and submit it
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = deleteUrl;
-
-                const csrfToken = document.querySelector('meta[name="csrf-token"]');
-                if (csrfToken) {
-                    const csrfInput = document.createElement('input');
-                    csrfInput.type = 'hidden';
-                    csrfInput.name = '_token';
-                    csrfInput.value = csrfToken.getAttribute('content');
-                    form.appendChild(csrfInput);
-                }
-
-                const methodInput = document.createElement('input');
-                methodInput.type = 'hidden';
-                methodInput.name = '_method';
-                methodInput.value = 'DELETE';
-                form.appendChild(methodInput);
-
-                document.body.appendChild(form);
-                form.submit();
-            }
-        }
-    }
-}
-</script>
 @endsection
