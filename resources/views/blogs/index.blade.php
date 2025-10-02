@@ -135,17 +135,6 @@
                                         </div>
                                     @endif
                                     
-                                    <!-- Bookmark Button -->
-                                    @auth
-                                        <button onclick="event.stopPropagation(); toggleBookmark({{ $blog->id }})" 
-                                                id="bookmark-{{ $blog->id }}"
-                                                class="absolute top-3 right-3 p-2 rounded-full bg-white/90 hover:bg-white shadow-lg transition-all duration-200 hover:scale-110">
-                                            <svg class="w-5 h-5 text-gray-400 hover:text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
-                                            </svg>
-                                        </button>
-                                    @endauth
-                                    
                                     <!-- Reading Time -->
                                     <div class="absolute bottom-3 left-3">
                                         <span class="bg-black/70 text-white text-xs px-2 py-1 rounded-full">
@@ -318,42 +307,15 @@
 
 @push('scripts')
 <script>
-// Enhanced bookmark functionality
-window.toggleBookmark = async function(blogId) {
-    try {
-        const response = await fetch('/api/bookmarks', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-            },
-            body: JSON.stringify({ blog_id: blogId })
-        });
-        
-        const data = await response.json();
-        updateBookmarkButton(blogId, data.bookmarked);
-        
-        // Show notification
-        showNotification(data.bookmarked ? 'Blog bookmarked!' : 'Bookmark removed!');
-    } catch (error) {
-        console.error('Bookmark error:', error);
-        showNotification('Failed to update bookmark', 'error');
-    }
-};
-
-function updateBookmarkButton(blogId, isBookmarked) {
-    const button = document.getElementById(`bookmark-${blogId}`);
-    if (button) {
-        const svg = button.querySelector('svg');
-        if (isBookmarked) {
-            svg.classList.add('text-yellow-500');
-            svg.classList.remove('text-gray-400');
-        } else {
-            svg.classList.add('text-gray-400');
-            svg.classList.remove('text-yellow-500');
+// Enhanced search functionality
+document.getElementById('hero-search')?.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        const query = this.value.trim();
+        if (query) {
+            window.location.href = '{{ route("blogs.search") }}?q=' + encodeURIComponent(query);
         }
     }
-}
+});
 
 function showNotification(message, type = 'success') {
     const notification = document.createElement('div');
