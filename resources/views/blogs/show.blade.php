@@ -84,9 +84,7 @@
                                 <input type="hidden" name="type" value="like">
                                 <button type="submit" 
                                         class="flex items-center space-x-2 bg-green-100 hover:bg-green-200 text-green-800 px-4 py-2 rounded dark:bg-green-900 dark:text-green-300">
-                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z"/>
-                                    </svg>
+                                    👍
                                     <span id="likes-count">{{ $blog->likes()->where('type', 'like')->count() }}</span>
                                 </button>
                             </form>
@@ -98,9 +96,7 @@
                                 <input type="hidden" name="type" value="dislike">
                                 <button type="submit" 
                                         class="flex items-center space-x-2 bg-red-100 hover:bg-red-200 text-red-800 px-4 py-2 rounded dark:bg-red-900 dark:text-red-300">
-                                    <svg class="w-5 h-5 transform rotate-180" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z"/>
-                                    </svg>
+                                    👎
                                     <span id="dislikes-count">{{ $blog->likes()->where('type', 'dislike')->count() }}</span>
                                 </button>
                             </form>
@@ -160,13 +156,24 @@
                                                     <input type="hidden" name="likeable_id" value="{{ $comment->id }}">
                                                     <input type="hidden" name="type" value="like">
                                                     <button type="submit" 
-                                                            class="flex items-center space-x-1 text-sm text-gray-500 hover:text-green-600">
-                                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                                            <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z"/>
-                                                        </svg>
+                                                            class="flex items-center space-x-1 text-sm text-gray-500 hover:text-green-600 dark:text-gray-400 dark:hover:text-green-400">
+                                                        👍
                                                         <span id="comment-likes-{{ $comment->id }}">{{ $comment->likes()->where('type', 'like')->count() }}</span>
                                                     </button>
                                                 </form>
+                                                
+                                                <form method="POST" action="{{ route('likes.toggle') }}" class="inline" onsubmit="return handleLikeSubmit(event, 'comment', {{ $comment->id }}, 'dislike')">
+                                                    @csrf
+                                                    <input type="hidden" name="likeable_type" value="comment">
+                                                    <input type="hidden" name="likeable_id" value="{{ $comment->id }}">
+                                                    <input type="hidden" name="type" value="dislike">
+                                                    <button type="submit" 
+                                                            class="flex items-center space-x-1 text-sm text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400">
+                                                        👎
+                                                        <span id="comment-dislikes-{{ $comment->id }}">{{ $comment->likes()->where('type', 'dislike')->count() }}</span>
+                                                    </button>
+                                                </form>
+                                                
                                                 <button onclick="showReplyForm({{ $comment->id }})" 
                                                         class="text-sm text-gray-500 hover:text-blue-600">
                                                     Reply
@@ -209,7 +216,35 @@
                                                                 {{ $reply->created_at->diffForHumans() }}
                                                             </span>
                                                         </div>
-                                                        <p class="text-sm text-gray-700 dark:text-gray-300">{{ $reply->content }}</p>
+                                                        <p class="text-sm text-gray-700 dark:text-gray-300 mb-2">{{ $reply->content }}</p>
+                                                        
+                                                        @auth
+                                                            <div class="flex items-center space-x-2">
+                                                                <form method="POST" action="{{ route('likes.toggle') }}" class="inline" onsubmit="return handleLikeSubmit(event, 'comment', {{ $reply->id }}, 'like')">
+                                                                    @csrf
+                                                                    <input type="hidden" name="likeable_type" value="comment">
+                                                                    <input type="hidden" name="likeable_id" value="{{ $reply->id }}">
+                                                                    <input type="hidden" name="type" value="like">
+                                                                    <button type="submit" 
+                                                                            class="flex items-center space-x-1 text-xs text-gray-500 hover:text-green-600 dark:text-gray-400 dark:hover:text-green-400">
+                                                                        👍
+                                                                        <span id="comment-likes-{{ $reply->id }}">{{ $reply->likes()->where('type', 'like')->count() }}</span>
+                                                                    </button>
+                                                                </form>
+                                                                
+                                                                <form method="POST" action="{{ route('likes.toggle') }}" class="inline" onsubmit="return handleLikeSubmit(event, 'comment', {{ $reply->id }}, 'dislike')">
+                                                                    @csrf
+                                                                    <input type="hidden" name="likeable_type" value="comment">
+                                                                    <input type="hidden" name="likeable_id" value="{{ $reply->id }}">
+                                                                    <input type="hidden" name="type" value="dislike">
+                                                                    <button type="submit" 
+                                                                            class="flex items-center space-x-1 text-xs text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400">
+                                                                        👎
+                                                                        <span id="comment-dislikes-{{ $reply->id }}">{{ $reply->likes()->where('type', 'dislike')->count() }}</span>
+                                                                    </button>
+                                                                </form>
+                                                            </div>
+                                                        @endauth
                                                     </div>
                                                 </div>
                                             </div>
@@ -282,6 +317,11 @@
                         document.getElementById('dislikes-count').textContent = data.dislikes_count;
                     } else if (type === 'comment') {
                         document.getElementById('comment-likes-' + id).textContent = data.likes_count;
+                        // Also update dislikes if the element exists
+                        const dislikesElement = document.getElementById('comment-dislikes-' + id);
+                        if (dislikesElement) {
+                            dislikesElement.textContent = data.dislikes_count;
+                        }
                     }
                 } else {
                     console.error('Server returned success=false:', data);
